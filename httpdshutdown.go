@@ -1,3 +1,5 @@
+// Package httpdshutdown implements some convenience functions for cleanly shutting down
+// an http daemon.
 package httpdshutdown
 
 import (
@@ -10,6 +12,7 @@ import (
 	"time"
 )
 
+// ShutdownHook is the type callers will implement in their own daemon shutdown handlers.
 type ShutdownHook func() error
 
 type Watcher struct {
