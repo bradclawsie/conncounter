@@ -18,7 +18,7 @@ func TestNil(t *testing.T) {
 	if err == nil {
 		t.Errorf("TestNil: should have error")
 	}
-	_,err = w.IsAccepting()
+	_, err = w.IsAccepting()
 	if err == nil {
 		t.Errorf("TestNil: should have error")
 	}
@@ -29,14 +29,14 @@ func TestNil(t *testing.T) {
 }
 
 func TestBadTimeout(t *testing.T) {
-	_,w_err := NewWatcher(-1)
+	_, w_err := NewWatcher(-1)
 	if w_err == nil {
 		t.Errorf("TestBadTimeout: should have error")
 	}
 }
 
 func TestValid(t *testing.T) {
-	w,w_err := NewWatcher(3000)	
+	w, w_err := NewWatcher(3000)
 	if w == nil || w_err != nil {
 		t.Errorf("TestValid: should not be nil")
 	}
@@ -44,7 +44,7 @@ func TestValid(t *testing.T) {
 	if err != nil {
 		t.Errorf("TestValid: should not have error")
 	}
-	accepting,err_a := w.IsAccepting()
+	accepting, err_a := w.IsAccepting()
 	if err_a != nil {
 		t.Errorf("TestValid: should not have error")
 	}
@@ -63,7 +63,7 @@ func sampleShutdownHook() error {
 }
 
 func TestStop(t *testing.T) {
-	w,w_err := NewWatcher(3000,sampleShutdownHook)
+	w, w_err := NewWatcher(3000, sampleShutdownHook)
 	if w == nil || w_err != nil {
 		t.Errorf("TestStop: should not be nil")
 	}
@@ -91,7 +91,7 @@ func TestStop(t *testing.T) {
 
 func TestHttpDaemonTimeout(t *testing.T) {
 	fmt.Printf("\n\n")
-	w,w_err := NewWatcher(2000,sampleShutdownHook)
+	w, w_err := NewWatcher(2000, sampleShutdownHook)
 	if w == nil || w_err != nil {
 		t.Errorf("TestHttpDaemonTimeout: should not be nil")
 	}
@@ -109,7 +109,7 @@ func TestHttpDaemonTimeout(t *testing.T) {
 	}))
 
 	ts.Config.ConnState = func(conn net.Conn, newState http.ConnState) {
-		fmt.Printf("(0) NEW CONN STATE:%v\n",newState)
+		fmt.Printf("(0) NEW CONN STATE:%v\n", newState)
 		w.RecordConnState(newState)
 		return
 	}
@@ -155,7 +155,7 @@ func TestHttpDaemonTimeout(t *testing.T) {
 
 func TestHttpDaemonNormalExit(t *testing.T) {
 	fmt.Printf("\n\n")
-	w,w_err := NewWatcher(20000,sampleShutdownHook)
+	w, w_err := NewWatcher(20000, sampleShutdownHook)
 	if w == nil || w_err != nil {
 		t.Errorf("TestHttpDaemonNormalExit: should not be nil")
 	}
@@ -173,7 +173,7 @@ func TestHttpDaemonNormalExit(t *testing.T) {
 	}))
 
 	ts.Config.ConnState = func(conn net.Conn, newState http.ConnState) {
-		fmt.Printf("(1) NEW CONN STATE:%v\n",newState)
+		fmt.Printf("(1) NEW CONN STATE:%v\n", newState)
 		w.RecordConnState(newState)
 		return
 	}
