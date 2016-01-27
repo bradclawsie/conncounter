@@ -91,7 +91,7 @@ func TestStop(t *testing.T) {
 
 func TestHttpDaemonTimeout(t *testing.T) {
 	fmt.Printf("\n\n")
-	w,w_err := NewWatcher(3000,sampleShutdownHook)
+	w,w_err := NewWatcher(2000,sampleShutdownHook)
 	if w == nil || w_err != nil {
 		t.Errorf("TestHttpDaemonTimeout: should not be nil")
 	}
@@ -114,8 +114,8 @@ func TestHttpDaemonTimeout(t *testing.T) {
 		return
 	}
 	// needed to force the connection to close
-	ts.Config.ReadTimeout = 15 * time.Second
-	ts.Config.WriteTimeout = 15 * time.Second
+	ts.Config.ReadTimeout = 8 * time.Second
+	ts.Config.WriteTimeout = 8 * time.Second
 
 	ts.Start()
 	defer ts.Close()
