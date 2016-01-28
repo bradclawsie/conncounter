@@ -117,22 +117,22 @@ func (w *Watcher) OnStop() error {
 
 // SigHandle is an example of a typical signal handler that will attempt a graceful shutdown
 // for a set of known signals.
-func SigHandle(c <-chan os.Signal, w *Watcher) {
+func SigHandle(sigs <-chan os.Signal, w *Watcher, exitcode chan<- int) {
 	if w == nil {
 		// panic since this will typically be launched as a goroutine.
 		panic("SigHandler: Watcher is nil")
 	}
-	for sig := range c {
+	for sig := range sigs {
 		if sig == syscall.SIGTERM || sig == syscall.SIGQUIT || sig == syscall.SIGHUP {
 			log.Printf("*** caught signal %v, stop\n", sig)
 			stopErr := w.OnStop()
 			if stopErr != nil {
 				log.Printf("OnStop err: %s", stopErr.Error())
 				log.Printf("control has failed to shut down gracefully\n")
-				os.Exit(1)
+				exitcode <- 1 // caller should os.Exit(1)
 			}
 			log.Printf("control has shut down gracefully\n")
-			os.Exit(0)
+			exitcode <- 0 // caller should os.Exit(0)
 		} else if sig == syscall.SIGINT {
 			log.Printf("*** caught signal %v, PANIC stop\n", sig)
 			panic("panic exit")
