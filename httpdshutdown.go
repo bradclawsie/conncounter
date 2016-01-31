@@ -63,6 +63,9 @@ func main() {
 
 */
 
+// Package httpdshutdown allows for graceful shutdown of http daemons. This package
+// exports a `Watcher` that exports methods for signal handling, connection state
+// observation, and shutdown hook registration and execution.
 package httpdshutdown
 
 import (
@@ -89,7 +92,7 @@ type Watcher struct {
 //
 // The first argument is a timeout in milliseconds that will trigger shutdown hooks
 // even if the daemon still has open connections. Further arguments are a variadic
-// list of type ShutDownHook.
+// list of type `ShutDownHook`.
 //
 // Example instantiation:
 //
@@ -108,7 +111,7 @@ func NewWatcher(timeoutMS int, hooks ...ShutdownHook) (*Watcher, error) {
 }
 
 // RecordConnState counts open and closed connections.
-// This function can be assigned to a http.Server's ConnState field.
+// This function can be assigned to a `http.Server`'s `ConnState` field.
 //
 // Example use:
 //
@@ -137,7 +140,7 @@ func (w *Watcher) RecordConnState(newState http.ConnState) {
 }
 
 // RunHooks executes registered hooks, each of which blocks. Typically this is called
-// automatically by OnStop.
+// automatically by `OnStop`.
 func (w *Watcher) RunHooks() error {
 	if w == nil {
 		return errors.New("RunHooks: receiver is nil")
@@ -153,7 +156,7 @@ func (w *Watcher) RunHooks() error {
 
 // OnStop will be called by a daemon's signal handler when it is time to shutdown. If there
 // are any shutdown handlers, they will be called. The timeout set on the watcher will
-// be honored. Typically this is called via SigHandle as your signal handler.
+// be honored. Typically this is called via `SigHandle` as your signal handler.
 func (w *Watcher) OnStop() error {
 	if w == nil {
 		return errors.New("OnStop: receiver is nil")
