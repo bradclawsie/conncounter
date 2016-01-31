@@ -19,8 +19,6 @@ type Watcher struct {
 	connsWG       *sync.WaitGroup // Allows us to wait for conns to complete.
 	shutdownHooks []ShutdownHook  // Run these when daemon is done or timed out.
 	timeoutMS     int             // Grace period for daemon shutdown.
-	accepting     bool            // Should the daemon accept conns?
-	acceptingMut  *sync.RWMutex   // Protect access to accepting state.
 }
 
 // NewWatcher construct a Watcher with a timeout and an optional set of shutdown hooks
@@ -34,8 +32,6 @@ func NewWatcher(timeoutMS int, hooks ...ShutdownHook) (*Watcher, error) {
 	w.connsWG = new(sync.WaitGroup)
 	w.shutdownHooks = make([]ShutdownHook, len(hooks))
 	copy(w.shutdownHooks, hooks)
-	w.accepting = false
-	w.acceptingMut = new(sync.RWMutex)
 	return w, nil
 }
 
@@ -68,28 +64,6 @@ func (w *Watcher) RunHooks() error {
 	return nil
 }
 
-// Accepting sets the Watcher's accepting state to true or false.
-func (w *Watcher) Accepting(acceptingState bool) error {
-	if w == nil {
-		return errors.New("Accepting: receiver is nil")
-	}
-	w.acceptingMut.Lock()
-	w.accepting = acceptingState
-	w.acceptingMut.Unlock()
-	return nil
-}
-
-// IsAccepting tells the caller if the daemon will accept conns or not.
-func (w *Watcher) IsAccepting() (bool, error) {
-	if w == nil {
-		return false, errors.New("IsAccepting: receiver is nil")
-	}
-	w.acceptingMut.RLock()
-	acceptingState := w.accepting
-	w.acceptingMut.RUnlock()
-	return acceptingState, nil
-}
-
 // OnStop will be called by a daemon's signal handler when it is time to shutdown. If there
 // are any shutdown handlers, they will be called. The timeout set on the watcher will
 // be honored.
@@ -97,7 +71,6 @@ func (w *Watcher) OnStop() error {
 	if w == nil {
 		return errors.New("OnStop: receiver is nil")
 	}
-	_ = w.Accepting(false) // No longer accepting conns.
 	waitChan := make(chan bool, 1)
 	go func() {
 		w.connsWG.Wait()
@@ -117,13 +90,14 @@ func (w *Watcher) OnStop() error {
 
 // SigHandle is an example of a typical signal handler that will attempt a graceful shutdown
 // for a set of known signals.
-func SigHandle(sigs <-chan os.Signal, w *Watcher, exitcode chan<- int) {
+func (w *Watcher) SigHandle(sigs <-chan os.Signal, exitcode chan<- int) {
 	if w == nil {
 		// panic since this will typically be launched as a goroutine.
 		panic("SigHandler: Watcher is nil")
 	}
 	for sig := range sigs {
 		if sig == syscall.SIGTERM || sig == syscall.SIGQUIT || sig == syscall.SIGHUP {
+			// The signals that terminate the daemon.
 			log.Printf("*** caught signal %v, stop\n", sig)
 			stopErr := w.OnStop()
 			if stopErr != nil {
@@ -134,6 +108,7 @@ func SigHandle(sigs <-chan os.Signal, w *Watcher, exitcode chan<- int) {
 			log.Printf("control has shut down gracefully\n")
 			exitcode <- 0 // caller should os.Exit(0)
 		} else if sig == syscall.SIGINT {
+			// Unclean shutdown with panic message.
 			log.Printf("*** caught signal %v, PANIC stop\n", sig)
 			panic("panic exit")
 		} else {

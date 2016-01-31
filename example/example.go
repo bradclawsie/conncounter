@@ -28,7 +28,7 @@ func main() {
 		sigs := make(chan os.Signal, 1)
 		exitcode := make(chan int, 1)
 		signal.Notify(sigs)
-		go httpdshutdown.SigHandle(sigs, watcher, exitcode)
+		go watcher.SigHandle(sigs, exitcode)
 		code := <-exitcode
 		log.Printf("exit with code:%d", code)
 		os.Exit(code)
@@ -45,11 +45,6 @@ func main() {
 			watcher.RecordConnState(newState)
 			return
 		},
-	}
-	
-	accept_err := watcher.Accepting(true)
-	if accept_err != nil {
-		panic("could not toggle accept state")
 	}
 	
 	log.Fatal(srv.ListenAndServe())

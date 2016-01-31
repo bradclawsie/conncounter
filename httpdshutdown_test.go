@@ -11,18 +11,14 @@ import (
 	"time"
 )
 
+func init() {
+	fmt.Printf("\n\nNote: these tests include some time delays\n\n\n")
+}
+
 func TestNil(t *testing.T) {
 	var w *Watcher
 	w = nil
-	err := w.Accepting(true)
-	if err == nil {
-		t.Errorf("TestNil: should have error")
-	}
-	_, err = w.IsAccepting()
-	if err == nil {
-		t.Errorf("TestNil: should have error")
-	}
-	err = w.OnStop()
+	err := w.OnStop()
 	if err == nil {
 		t.Errorf("TestNil: should have error")
 	}
@@ -40,18 +36,7 @@ func TestValid(t *testing.T) {
 	if w == nil || w_err != nil {
 		t.Errorf("TestValid: should not be nil")
 	}
-	err := w.Accepting(true)
-	if err != nil {
-		t.Errorf("TestValid: should not have error")
-	}
-	accepting, err_a := w.IsAccepting()
-	if err_a != nil {
-		t.Errorf("TestValid: should not have error")
-	}
-	if accepting != true {
-		t.Errorf("TestValid: should be true")
-	}
-	err = w.OnStop()
+	err := w.OnStop()
 	if err != nil {
 		t.Errorf("TestValid: should not have error")
 	}
@@ -67,12 +52,8 @@ func TestStop(t *testing.T) {
 	if w == nil || w_err != nil {
 		t.Errorf("TestStop: should not be nil")
 	}
-	err := w.Accepting(true)
-	if err != nil {
-		t.Errorf("TestStop: should not have error")
-	}
 	w.RecordConnState(http.StateNew)
-	err = w.OnStop()
+	err := w.OnStop()
 	if err == nil {
 		t.Errorf("TestStop: should have error from 1 second timeout to force stop")
 	}
@@ -95,18 +76,16 @@ func TestHttpDaemonTimeout(t *testing.T) {
 	if w == nil || w_err != nil {
 		t.Errorf("TestHttpDaemonTimeout: should not be nil")
 	}
-	err := w.Accepting(true)
-	if err != nil {
-		t.Errorf("TestHttpDaemonTimeout: should not have error")
-	}
 
-	ts := httptest.NewUnstartedServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	handler := func(w http.ResponseWriter, r *http.Request) {
 		fmt.Println("hello from the test daemon; sleeping")
 		time.Sleep(5 * time.Second)
 		fmt.Println("goodbye from the test daemon")
 		fmt.Fprintln(w, "Hello, client")
 		return
-	}))
+	}
+	
+	ts := httptest.NewUnstartedServer(http.HandlerFunc(handler))
 
 	ts.Config.ConnState = func(conn net.Conn, newState http.ConnState) {
 		fmt.Printf("(0) NEW CONN STATE:%v\n", newState)
@@ -159,18 +138,16 @@ func TestHttpDaemonNormalExit(t *testing.T) {
 	if w == nil || w_err != nil {
 		t.Errorf("TestHttpDaemonNormalExit: should not be nil")
 	}
-	err := w.Accepting(true)
-	if err != nil {
-		t.Errorf("TestHttpDaemonNormalExit: should not have error")
-	}
 
-	ts := httptest.NewUnstartedServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	handler := func(w http.ResponseWriter, r *http.Request) {
 		fmt.Println("hello from the test daemon; sleeping")
 		time.Sleep(1 * time.Second)
 		fmt.Println("goodbye from the test daemon")
 		fmt.Fprintln(w, "Hello, client")
 		return
-	}))
+	}
+
+	ts := httptest.NewUnstartedServer(http.HandlerFunc(handler))
 
 	ts.Config.ConnState = func(conn net.Conn, newState http.ConnState) {
 		fmt.Printf("(1) NEW CONN STATE:%v\n", newState)
@@ -216,3 +193,4 @@ func TestHttpDaemonNormalExit(t *testing.T) {
 
 	wg.Wait()
 }
+
