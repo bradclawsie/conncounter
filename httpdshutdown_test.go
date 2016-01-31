@@ -84,7 +84,7 @@ func TestHttpDaemonTimeout(t *testing.T) {
 		fmt.Fprintln(w, "Hello, client")
 		return
 	}
-	
+
 	ts := httptest.NewUnstartedServer(http.HandlerFunc(handler))
 
 	ts.Config.ConnState = func(conn net.Conn, newState http.ConnState) {
@@ -193,4 +193,3 @@ func TestHttpDaemonNormalExit(t *testing.T) {
 
 	wg.Wait()
 }
-
