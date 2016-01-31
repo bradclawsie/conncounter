@@ -86,6 +86,15 @@ type Watcher struct {
 
 // NewWatcher construct a Watcher with a timeout and an optional set of shutdown hooks
 // to be called at the time of shutdown.
+//
+// The first argument is a timeout in milliseconds that will trigger shutdown hooks
+// even if the daemon still has open connections. Further arguments are a variadic
+// list of type ShutDownHook.
+//
+// Example instantiation:
+//
+//     watcher, watcher_err := httpdshutdown.NewWatcher(2000, sampleShutdownHook1, sampleShutdownHook2)
+//
 func NewWatcher(timeoutMS int, hooks ...ShutdownHook) (*Watcher, error) {
 	if timeoutMS < 0 {
 		return nil, errors.New("timeout must be a positive number")
@@ -99,6 +108,20 @@ func NewWatcher(timeoutMS int, hooks ...ShutdownHook) (*Watcher, error) {
 }
 
 // RecordConnState counts open and closed connections.
+// This function can be assigned to a http.Server's ConnState field.
+//
+// Example use:
+//
+//    srv := &http.Server{
+//            Addr: ":8080",
+//            ReadTimeout:  3 * time.Second,
+//            WriteTimeout: 3 * time.Second,
+//            ConnState: func(conn net.Conn, newState http.ConnState) {
+//                    log.Printf("(1) NEW CONN STATE:%v\n", newState)
+//                    watcher.RecordConnState(newState)
+//            }
+//    }
+//
 func (w *Watcher) RecordConnState(newState http.ConnState) {
 	if w == nil {
 		// we panic here instead of returning nil as the calling context does not
@@ -113,7 +136,8 @@ func (w *Watcher) RecordConnState(newState http.ConnState) {
 	}
 }
 
-// RunHooks executes registered hooks, each of which blocks.
+// RunHooks executes registered hooks, each of which blocks. Typically this is called
+// automatically by OnStop.
 func (w *Watcher) RunHooks() error {
 	if w == nil {
 		return errors.New("RunHooks: receiver is nil")
@@ -129,7 +153,7 @@ func (w *Watcher) RunHooks() error {
 
 // OnStop will be called by a daemon's signal handler when it is time to shutdown. If there
 // are any shutdown handlers, they will be called. The timeout set on the watcher will
-// be honored.
+// be honored. Typically this is called via SigHandle as your signal handler.
 func (w *Watcher) OnStop() error {
 	if w == nil {
 		return errors.New("OnStop: receiver is nil")
@@ -152,7 +176,23 @@ func (w *Watcher) OnStop() error {
 }
 
 // SigHandle is an example of a typical signal handler that will attempt a graceful shutdown
-// for a set of known signals.
+// for a set of known signals. The first argument is your signal channel, and the second
+// argument is the channel that can be polled for exit status codes.
+//
+// This should be called prior to starting your http daemon. Place it in its own goroutine
+// so signals can be recorded after the daemon has taken over control of the main thread.
+//
+// Example use:
+//
+//         go func() {
+//                 sigs := make(chan os.Signal, 1)
+//                 exitcode := make(chan int, 1)
+//                 signal.Notify(sigs)
+//                 go watcher.SigHandle(sigs, exitcode)
+//                 code := <-exitcode
+//                 log.Printf("exit with code:%d", code)
+//                 os.Exit(code)
+// 	}()
 func (w *Watcher) SigHandle(sigs <-chan os.Signal, exitcode chan<- int) {
 	if w == nil {
 		// panic since this will typically be launched as a goroutine.
