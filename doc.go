@@ -1,3 +1,8 @@
+/*
+
+This example illustrates how to start a new watcher, run its signal handler, and allow
+it to watch the connection state for a daemon
+
 package main
 
 import (
@@ -10,14 +15,19 @@ import (
 	"time"
 )
 
-func sampleShutdownHook() error {
-	log.Println("shutdown hook called")
+func sampleShutdownHook1() error {
+	log.Println("shutdown hook 1 called")
+	return nil
+}
+
+func sampleShutdownHook2() error {
+	log.Println("shutdown hook 2 called")
 	return nil
 }
 
 func main() {
 	log.Printf("launching with pid:%d\n", os.Getpid())
-	watcher, watcher_err := httpdshutdown.NewWatcher(2000, sampleShutdownHook)
+	watcher, watcher_err := httpdshutdown.NewWatcher(2000, sampleShutdownHook1, sampleShutdownHook2)
 	if watcher == nil || watcher_err != nil {
 		panic("could not construct watcher")
 	}
@@ -34,8 +44,6 @@ func main() {
 		os.Exit(code)
 	}()
 
-	// next, two handlers...one with a long sleep, the other none
-	
 	srv := &http.Server{
 		Addr: ":8080",
 		ReadTimeout:  3 * time.Second,
@@ -49,3 +57,6 @@ func main() {
 	
 	log.Fatal(srv.ListenAndServe())
 }
+
+*/
+package main
