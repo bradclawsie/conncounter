@@ -25,15 +25,15 @@ func TestNil(t *testing.T) {
 }
 
 func TestBadTimeout(t *testing.T) {
-	_, w_err := NewWatcher(-1)
-	if w_err == nil {
+	_, wErr := NewWatcher(-1)
+	if wErr == nil {
 		t.Errorf("TestBadTimeout: should have error")
 	}
 }
 
 func TestValid(t *testing.T) {
-	w, w_err := NewWatcher(3000)
-	if w == nil || w_err != nil {
+	w, wErr := NewWatcher(3000)
+	if w == nil || wErr != nil {
 		t.Errorf("TestValid: should not be nil")
 	}
 	err := w.OnStop()
@@ -48,8 +48,8 @@ func sampleShutdownHook() error {
 }
 
 func TestStop(t *testing.T) {
-	w, w_err := NewWatcher(3000, sampleShutdownHook)
-	if w == nil || w_err != nil {
+	w, wErr := NewWatcher(3000, sampleShutdownHook)
+	if w == nil || wErr != nil {
 		t.Errorf("TestStop: should not be nil")
 	}
 	w.RecordConnState(http.StateNew)
@@ -72,8 +72,8 @@ func TestStop(t *testing.T) {
 
 func TestHttpDaemonTimeout(t *testing.T) {
 	fmt.Printf("\n\n")
-	w, w_err := NewWatcher(2000, sampleShutdownHook)
-	if w == nil || w_err != nil {
+	w, wErr := NewWatcher(2000, sampleShutdownHook)
+	if w == nil || wErr != nil {
 		t.Errorf("TestHttpDaemonTimeout: should not be nil")
 	}
 
@@ -134,8 +134,8 @@ func TestHttpDaemonTimeout(t *testing.T) {
 
 func TestHttpDaemonNormalExit(t *testing.T) {
 	fmt.Printf("\n\n")
-	w, w_err := NewWatcher(20000, sampleShutdownHook)
-	if w == nil || w_err != nil {
+	w, wErr := NewWatcher(20000, sampleShutdownHook)
+	if w == nil || wErr != nil {
 		t.Errorf("TestHttpDaemonNormalExit: should not be nil")
 	}
 
