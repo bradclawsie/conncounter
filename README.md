@@ -1,5 +1,5 @@
 [![License BSD](https://img.shields.io/badge/License-BSD-blue.svg)](http://opensource.org/licenses/BSD-3-Clause)
-[![Go Report Card](https://goreportcard.com/badge/github.com/bradclawsie/httpdshutdown)](https://goreportcard.com/badge/github.com/bradclawsie/httpdshutdown)
+[![Go Report Card](https://goreportcard.com/badge/github.com/bradclawsie/httpdshutdown)](https://goreportcard.com/report/github.com/bradclawsie/httpdshutdown)
 [![GoDoc](https://godoc.org/github.com/bradclawsie/httpshutdown?status.svg)](http://godoc.org/github.com/bradclawsie/httpdshutdown)
 
 # httpdshutdown
