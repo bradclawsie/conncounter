@@ -1,3 +1,7 @@
+[![License BSD](https://img.shields.io/badge/License-BSD-blue.svg)](http://opensource.org/licenses/BSD-3-Clause)
+[![Go Report Card](https://goreportcard.com/badge/github.com/nats-io/go-nats)](https://goreportcard.com/badge/github.com/bradclawsie/httpshutdown)
+[![GoDoc](https://godoc.org/github.com/bradclawsie/httpshutdown?status.svg)](http://godoc.org/github.com/bradclawsie/httpshutdown)
+
 # httpdshutdown
 Count connections to permit daemons to stop safely, and run hooks at
 shutdown time.
